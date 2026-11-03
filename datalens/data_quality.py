@@ -149,3 +149,4 @@ def run_data_detective(df: pd.DataFrame, column_types: Dict[str, str]) -> Dict[s
         "total_rows": n_rows,
         "total_cols": n_cols,
     }
+

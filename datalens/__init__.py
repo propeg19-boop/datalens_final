@@ -4,3 +4,4 @@ A dataset-agnostic data analytics, quality inspection, and pattern exploration e
 """
 
 __version__ = "1.0.0"
+

@@ -83,3 +83,4 @@ if __name__ == "__main__":
     excel_path = out_dir / "coffeeshopsales_sample.xlsx"
     coffee_df.to_excel(excel_path, index=False)
     print(f"Generated Excel sample dataset at: {excel_path}")
+

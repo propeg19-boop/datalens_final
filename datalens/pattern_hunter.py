@@ -236,3 +236,4 @@ def run_pattern_hunter(df: pd.DataFrame, column_types: Dict[str, str]) -> Dict[s
         "trends": find_time_trends(df, column_types),
         "breakdowns": find_category_breakdowns(df, column_types),
     }
+

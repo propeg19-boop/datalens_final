@@ -78,3 +78,4 @@ def test_empty_edge_cases():
     assert results["correlations"] == []
     assert results["trends"] == []
     assert results["breakdowns"] == []
+

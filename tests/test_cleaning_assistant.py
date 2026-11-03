@@ -71,3 +71,4 @@ def test_duplicate_and_outlier_rules():
     for o_rec in recs["outlier_recommendations"]:
         assert o_rec["action"] == "review_manual"
         assert "IQR" in o_rec["issue"]
+

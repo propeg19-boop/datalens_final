@@ -76,3 +76,4 @@ def test_end_to_end_verification_coffee_shop(coffee_shop_fixture):
     assert diff["score_after"] >= diff["score_before"]
     assert diff["missing_resolved"] >= 0
     assert len(diff["log"]) == len(approved)
+

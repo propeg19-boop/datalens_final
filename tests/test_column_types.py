@@ -63,3 +63,4 @@ def test_id_vs_numeric_rules():
     # True unique identifier string -> id
     unique_ids = pd.Series([f"TX_{i}" for i in range(50)])
     assert classify_column(unique_ids, "tx_code") == "id"
+

@@ -87,3 +87,4 @@ def test_latin1_encoding_fallback(tmp_path):
     assert err is None
     assert df_loaded is not None
     assert len(df_loaded) == 1
+

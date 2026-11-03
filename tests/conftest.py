@@ -45,3 +45,4 @@ def coffee_shop_fixture():
     """Sample coffee shop sales DataFrame."""
     from data.sample.generate_reference_data import generate_coffee_shop_sample
     return generate_coffee_shop_sample(n_rows=150)
+

@@ -6,7 +6,17 @@ Provides HTML rendering for metrics, health gauges, recommendation cards, and be
 Uses clean SVG vector icons (no emojis as structural icons).
 """
 from typing import Dict, Any, Optional, List
+from pathlib import Path
 import html
+import streamlit as st
+
+
+def inject_custom_css() -> None:
+    """Inject DataLens styles.css into the active Streamlit app."""
+    css_path = Path(__file__).resolve().parent / "styles.css"
+    if css_path.exists():
+        css = css_path.read_text(encoding="utf-8")
+        st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 
 def get_svg_icon(icon_name: str) -> str:
@@ -238,3 +248,4 @@ def render_before_after_diff(comp: Dict[str, Any]) -> str:
         </div>
     </div>
     """
+

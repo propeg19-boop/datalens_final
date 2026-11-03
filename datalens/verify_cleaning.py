@@ -217,3 +217,4 @@ def verify_cleaning(
         "applied_actions_count": len([l for l in applied_log if l.get("status") in {"applied", "fallback"}]),
         "log": applied_log,
     }
+
