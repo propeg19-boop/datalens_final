@@ -90,8 +90,9 @@ def run_data_detective(df: pd.DataFrame, column_types: Dict[str, str]) -> Dict[s
             skew = float(series.skew()) if m > 2 else 0.0
             is_skewed = abs(skew) >= SKEWNESS_THRESHOLD
 
-            lower_bound = q1 - (IQR_STANDARD_MULTIPLIER * iqr)
-            upper_bound = q3 + (IQR_STANDARD_MULTIPLIER * iqr)
+            multiplier = IQR_SKEWED_MULTIPLIER if is_skewed else IQR_STANDARD_MULTIPLIER
+            lower_bound = q1 - (multiplier * iqr)
+            upper_bound = q3 + (multiplier * iqr)
 
             outlier_mask = (series < lower_bound) | (series > upper_bound)
             cnt = int(outlier_mask.sum())
@@ -99,8 +100,8 @@ def run_data_detective(df: pd.DataFrame, column_types: Dict[str, str]) -> Dict[s
             total_outliers += cnt
 
             note = (
-                f"Distribution is skewed (skewness: {skew:.2f}). Values outside IQR are likely "
-                f"legitimate extreme values, not errors."
+                f"Distribution is skewed (skewness: {skew:.2f}). Evaluated using wider "
+                f"bounds [{lower_bound:.2f}, {upper_bound:.2f}] ({multiplier}*IQR) to accommodate legitimate extreme values."
                 if is_skewed
                 else f"Standard symmetric IQR bounds [Q1 - 1.5*IQR, Q3 + 1.5*IQR]."
             )

@@ -50,7 +50,7 @@ with col1:
         unsafe_allow_html=True,
     )
 with col2:
-    score = pipeline.quality_report.get("quality_score", "N/A")
+    score = pipeline.active_quality_report.get("quality_score", "N/A")
     st.markdown(
         render_metric_card(
             "Data Health Score",

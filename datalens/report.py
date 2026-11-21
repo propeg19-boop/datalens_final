@@ -5,6 +5,7 @@ Generates comprehensive Markdown and styled HTML reports summarizing data health
 applied cleaning actions, top statistical patterns, and predictive model benchmarks.
 """
 from typing import Dict, Any, Optional
+from datetime import datetime
 import html
 
 
@@ -24,7 +25,7 @@ def generate_markdown_report(
 
     lines = [
         f"# DataLens Analysis & Verification Report: {dataset_name}",
-        f"\n**Date:** {summary.get('generated_at', '2026-11-03')}",
+        f"\n**Date:** {summary.get('generated_at', datetime.now().strftime('%Y-%m-%d %H:%M'))}",
         f"**Shape:** {n_rows:,} rows × {n_cols} columns\n",
         "---",
         "\n## 1. Executive Summary & Data Health\n",

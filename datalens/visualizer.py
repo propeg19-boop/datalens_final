@@ -229,11 +229,17 @@ def plot_category_breakdown(
     cat_col: str,
     metric_col: str,
     top_n: int = DEFAULT_TOP_N_CATEGORIES,
+    agg_type: str = "sum",
 ) -> go.Figure:
     """Render horizontal bar chart for categorical aggregations with Top-N limit."""
     sub = df[[cat_col, metric_col]].dropna().copy()
     sub[metric_col] = pd.to_numeric(sub[metric_col], errors="coerce")
-    grouped = sub.groupby(cat_col)[metric_col].sum().reset_index()
+    if agg_type == "mean":
+        grouped = sub.groupby(cat_col)[metric_col].mean().reset_index()
+        title_label = f"Average {metric_col}"
+    else:
+        grouped = sub.groupby(cat_col)[metric_col].sum().reset_index()
+        title_label = f"Total {metric_col}"
     grouped = grouped.sort_values(by=metric_col, ascending=False).head(top_n)
 
     fig = px.bar(
@@ -244,5 +250,5 @@ def plot_category_breakdown(
         color_discrete_sequence=[THEME["secondary"]],
     )
     fig.update_yaxes(categoryorder="total ascending", title="")
-    fig.update_xaxes(title=f"Total {metric_col}")
-    return _apply_theme(fig, f"Top {top_n} {cat_col} by {metric_col}")
+    fig.update_xaxes(title=title_label)
+    return _apply_theme(fig, f"Top {top_n} {cat_col} by {title_label}")

@@ -67,3 +67,6 @@ def test_skewness_annotation():
     assert outlier_info["count"] > 0
     assert outlier_info["is_skewed"] is True
     assert "skewed" in outlier_info["note"].lower()
+    # Verify that skewed multiplier (3.0*IQR) was actually used for upper bound
+    expected_upper = outlier_info["q3"] + 3.0 * outlier_info["iqr"]
+    assert outlier_info["upper_bound"] == pytest.approx(expected_upper, abs=0.01)

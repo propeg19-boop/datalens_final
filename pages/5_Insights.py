@@ -100,15 +100,16 @@ with tab_breakdown:
         for b in breakdowns[:5]:
             col_chart, col_cap = st.columns([3, 2])
             with col_chart:
-                fig = plot_category_breakdown(df, b["category_col"], b["metric_col"])
+                fig = plot_category_breakdown(df, b["category_col"], b["metric_col"], agg_type=b.get("agg_type", "sum"))
                 st.plotly_chart(fig, use_container_width=True)
             with col_cap:
+                lead_metric = f"Avg {b['top_category_sum']}" if b.get("agg_type") == "mean" else f"{b['top_category_sum']} ({b['top_category_share_pct']}%)"
                 st.markdown(
                     f"""
                     <div class="dl-rec-card" style="margin-top: 50px;">
                         <div class="dl-metric-label">Leading Segment</div>
                         <div style="font-size: 20px; font-weight: 700; color: var(--dl-primary); margin: 6px 0;">
-                            {b['top_category']} ({b['top_category_share_pct']}%)
+                            {b['top_category']} ({lead_metric})
                         </div>
                         <div class="dl-rec-reason">
                             {b.get('caption', '')}

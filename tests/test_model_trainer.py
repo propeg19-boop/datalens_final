@@ -56,3 +56,20 @@ def test_train_classification_model():
     assert res["task"] == "classification"
     assert len(res["metrics_table"]["models"]) == 3
     assert res["metrics_table"]["Accuracy"][2] > 0.80
+
+
+def test_categorical_leakage_warning():
+    # store_location is a 1-to-1 proxy for store_id
+    n = 100
+    store_ids = ["Store-A", "Store-B", "Store-C"] * 33 + ["Store-A"]
+    loc_map = {"Store-A": "Loc-North", "Store-B": "Loc-South", "Store-C": "Loc-East"}
+    locations = [loc_map[s] for s in store_ids]
+    sales = [float(i) for i in range(n)]
+
+    df = pd.DataFrame({"store_id": store_ids, "store_location": locations, "sales": sales})
+    col_types = {"store_id": "categorical", "store_location": "categorical", "sales": "numeric"}
+
+    res = train_baseline_model(df, col_types, "store_id")
+    assert "error" not in res
+    assert len(res["leakage_warnings"]) > 0
+    assert "store_location" in res["leakage_warnings"][0]

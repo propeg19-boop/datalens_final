@@ -143,9 +143,9 @@ def classify_column(series: pd.Series, col_name: str = "") -> str:
             return "categorical"
         return "numeric"
 
-    # 7. Low / Moderate cardinality check -> categorical
+    # 7. Low / Moderate cardinality check or repeating foreign key ID -> categorical
     max_cat_threshold = max(CATEGORICAL_MIN_THRESHOLD, int(CATEGORICAL_RATIO * n_non_null))
-    if nunique <= max_cat_threshold:
+    if nunique <= max_cat_threshold or has_id_keyword:
         return "categorical"
 
     # 8. Unstructured free text

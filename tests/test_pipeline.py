@@ -32,6 +32,8 @@ def test_pipeline_end_to_end_coffee_shop():
     safe_actions = [r for r in recs["missing_recommendations"] if r["is_safe_auto"]]
     pipeline.apply_cleaning_actions(safe_actions)
     assert pipeline.cleaned_quality_report["total_missing_cells"] < audit["total_missing_cells"]
+    # Verify active_quality_report points to cleaned audit
+    assert pipeline.active_quality_report == pipeline.cleaned_quality_report
 
     # Discover patterns
     patterns = pipeline.discover_patterns(use_ai=False)
@@ -45,7 +47,15 @@ def test_pipeline_end_to_end_coffee_shop():
     assert model_res["task"] == "regression"
 
     # Export report
+    from datetime import datetime
+    current_date = datetime.now().strftime("%Y-%m-%d")
     md_rep = pipeline.get_summary_report("markdown")
     html_rep = pipeline.get_summary_report("html")
     assert "# DataLens" in md_rep
+    assert f"**Date:** {current_date}" in md_rep
     assert "<!DOCTYPE html>" in html_rep
+
+    # Test reset_to_raw clears cleaned report and restores active_quality_report
+    pipeline.reset_to_raw()
+    assert pipeline.cleaned_quality_report == {}
+    assert pipeline.active_quality_report == pipeline.quality_report

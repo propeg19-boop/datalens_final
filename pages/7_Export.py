@@ -34,7 +34,7 @@ with col1:
     )
 with col2:
     st.markdown(
-        render_metric_card("Final Quality Score", f"{pipeline.quality_report.get('quality_score')}/100", "Post-cleaning rating", "shield"),
+        render_metric_card("Final Quality Score", f"{pipeline.active_quality_report.get('quality_score')}/100", "Post-cleaning rating", "shield"),
         unsafe_allow_html=True,
     )
 with col3:

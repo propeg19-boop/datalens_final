@@ -94,16 +94,64 @@ def train_baseline_model(
     # Check for potential data leakage
     leakage_warnings = []
     for col in candidate_features:
-        if column_types.get(col) == "numeric" and task == "regression":
-            try:
-                corr = abs(float(valid_df[[col, target_col]].apply(pd.to_numeric).corr().iloc[0, 1]))
-                if corr >= 0.98:
-                    leakage_warnings.append(
-                        f"Feature '{col}' has near-perfect correlation (r={corr:.3f}) with '{target_col}'. "
-                        f"It may be a direct duplicate or derivative of the target (potential data leakage)."
-                    )
-            except Exception:
-                pass
+        ctype = column_types.get(col)
+        if task == "regression":
+            if ctype == "numeric":
+                try:
+                    corr = abs(float(valid_df[[col, target_col]].apply(pd.to_numeric).corr().iloc[0, 1]))
+                    if corr >= 0.98:
+                        leakage_warnings.append(
+                            f"Feature '{col}' has near-perfect correlation (r={corr:.3f}) with '{target_col}'. "
+                            f"It may be a direct duplicate or derivative of the target (potential data leakage)."
+                        )
+                except Exception:
+                    pass
+            elif ctype == "categorical":
+                try:
+                    sub_pair = valid_df[[col, target_col]].dropna().copy()
+                    if len(sub_pair) >= 20:
+                        sub_pair["_t"] = pd.to_numeric(sub_pair[target_col], errors="coerce")
+                        cat_means = sub_pair.groupby(col)["_t"].transform("mean")
+                        tot_var = sub_pair["_t"].var()
+                        if tot_var > 0:
+                            res_var = (sub_pair["_t"] - cat_means).var()
+                            explained = 1.0 - (res_var / tot_var)
+                            if explained >= 0.98:
+                                leakage_warnings.append(
+                                    f"Categorical feature '{col}' explains {explained * 100:.1f}% of variance in '{target_col}'. "
+                                    f"It may be a direct proxy or grouping of the target (potential data leakage)."
+                                )
+                except Exception:
+                    pass
+        elif task == "classification":
+            if ctype == "categorical":
+                try:
+                    sub_pair = valid_df[[col, target_col]].dropna()
+                    if len(sub_pair) >= 20:
+                        # Purity of mapping from feature category to target class
+                        mode_per_cat = sub_pair.groupby(col)[target_col].agg(
+                            lambda s: s.value_counts().iloc[0] if len(s) > 0 else 0
+                        )
+                        purity = mode_per_cat.sum() / len(sub_pair)
+                        if purity >= 0.98:
+                            leakage_warnings.append(
+                                f"Categorical feature '{col}' almost perfectly determines target '{target_col}' "
+                                f"({purity * 100:.1f}% mapping purity). It may be a direct synonym or proxy (potential data leakage)."
+                            )
+                except Exception:
+                    pass
+            elif ctype == "numeric":
+                try:
+                    codes, _ = pd.factorize(valid_df[target_col])
+                    num_s = pd.to_numeric(valid_df[col], errors="coerce")
+                    corr = abs(float(pd.DataFrame({"f": num_s, "t": codes}).corr().iloc[0, 1]))
+                    if corr >= 0.98:
+                        leakage_warnings.append(
+                            f"Numeric feature '{col}' has near-perfect correlation (r={corr:.3f}) with target '{target_col}' "
+                            f"classes (potential data leakage)."
+                        )
+                except Exception:
+                    pass
 
     # Preprocess features: One-hot encode categoricals, impute missing values
     num_cols = [c for c in candidate_features if column_types.get(c) == "numeric"]
@@ -128,9 +176,15 @@ def train_baseline_model(
 
     feature_names = list(X_encoded.columns)
 
-    # Train / Test split (80/20, fixed seed)
+    # Train / Test split (80/20, fixed seed, stratified if applicable)
+    stratify = None
+    if task == "classification":
+        val_counts = y_raw.value_counts()
+        if (val_counts >= 2).all() and len(val_counts) >= 2:
+            stratify = y_raw
+
     X_train, X_test, y_train, y_test = train_test_split(
-        X_encoded, y_raw, test_size=0.20, random_state=42
+        X_encoded, y_raw, test_size=0.20, random_state=42, stratify=stratify
     )
 
     # Scale numeric features
@@ -233,7 +287,8 @@ def train_baseline_model(
         rf_f1 = float(f1_score(y_test, y_pred_rf, average="weighted", zero_division=0))
 
         best_acc = max(lr_acc, rf_acc)
-        beats_baseline = best_acc > (dummy_acc + 0.05)
+        best_f1 = max(lr_f1, rf_f1)
+        beats_baseline = (best_acc > (dummy_acc + 0.05)) and (best_f1 > (dummy_f1 + 0.03))
 
         if beats_baseline:
             verdict_badge = "Effective Classifier"

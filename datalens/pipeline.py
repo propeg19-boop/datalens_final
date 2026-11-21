@@ -7,6 +7,7 @@ Pure Python/pandas - zero Streamlit imports, perfect for programmatic testing an
 """
 from typing import Dict, Any, List, Optional, Union, BinaryIO, Tuple
 from pathlib import Path
+from datetime import datetime
 import io
 import pandas as pd
 
@@ -38,6 +39,13 @@ class DataLensPipeline:
         self.patterns: Dict[str, Any] = {}
         self.model_results: Dict[str, Any] = {}
         self.applied_log: List[Dict[str, Any]] = []
+
+    @property
+    def active_quality_report(self) -> Dict[str, Any]:
+        """Return the most current quality audit report (cleaned if available, else raw)."""
+        if self.cleaned_quality_report:
+            return self.cleaned_quality_report
+        return self.quality_report
 
     def load_dataset(
         self,
@@ -91,6 +99,7 @@ class DataLensPipeline:
         self.column_types = classify_all(cleaned_df)
         after_report = run_data_detective(cleaned_df, self.column_types)
         self.cleaned_quality_report = after_report
+        self.recommendations = run_cleaning_assistant(cleaned_df, self.column_types, after_report)
 
         self.verification = verify_cleaning(before_report, after_report, log)
         return self.verification
@@ -100,6 +109,7 @@ class DataLensPipeline:
         if self.raw_df is not None:
             self.cleaned_df = self.raw_df.copy()
             self.applied_log = []
+            self.cleaned_quality_report = {}
             self.column_types = classify_all(self.raw_df)
             self.run_quality_audit()
             self.verification = {}
@@ -140,6 +150,7 @@ class DataLensPipeline:
         active_df = self.cleaned_df if self.cleaned_df is not None else self.raw_df
         summary_payload = {
             "dataset_name": self.filename,
+            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "rows": len(active_df) if active_df is not None else 0,
             "cols": len(active_df.columns) if active_df is not None else 0,
             "score_before": self.quality_report.get("quality_score", 0.0),

@@ -18,7 +18,7 @@ if "pipeline" not in st.session_state or st.session_state.pipeline.raw_df is Non
 
 pipeline: DataLensPipeline = st.session_state.pipeline
 df = pipeline.cleaned_df if pipeline.cleaned_df is not None else pipeline.raw_df
-report = pipeline.quality_report
+report = pipeline.active_quality_report
 
 st.markdown(
     render_hero(

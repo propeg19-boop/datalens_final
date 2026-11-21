@@ -10,7 +10,7 @@ from typing import Dict, Any
 MAX_UPLOAD_SIZE_MB = 100
 MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024
 SUPPORTED_EXTENSIONS = {".csv", ".xlsx", ".xls"}
-DEFAULT_CSV_ENCODINGS = ["utf-8", "latin-1", "cp1252"]
+DEFAULT_CSV_ENCODINGS = ["utf-8", "utf-8-sig", "latin-1", "cp1252"]
 
 # Column classification thresholds
 ID_UNIQUENESS_RATIO = 0.95

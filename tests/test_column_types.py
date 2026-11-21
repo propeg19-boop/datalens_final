@@ -64,3 +64,7 @@ def test_id_vs_numeric_rules():
     unique_ids = pd.Series([f"TX_{i}" for i in range(50)])
     assert classify_column(unique_ids, "tx_code") == "id"
 
+    # Non-numeric repeating ID with >100 unique values in multi-thousand row table -> categorical, not text
+    repeating_order_ids = pd.Series([f"ORD_{i % 300}" for i in range(1200)])
+    assert classify_column(repeating_order_ids, "order_id") == "categorical"
+

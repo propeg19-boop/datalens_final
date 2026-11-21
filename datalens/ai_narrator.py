@@ -60,6 +60,14 @@ def _generate_template_caption(finding: Dict[str, Any], finding_type: str) -> st
         bottom_cat = finding.get("bottom_category", "Bottom")
         bottom_sum = finding.get("bottom_category_sum", 0.0)
 
+        agg_type = finding.get("agg_type", "sum")
+
+        if agg_type == "mean":
+            return (
+                f"In the breakdown of '{metric}' by '{cat_col}', '{top_cat}' leads with the highest "
+                f"average of {top_sum:,.2f}. In contrast, '{bottom_cat}' recorded the lowest average ({bottom_sum:,.2f})."
+            )
+
         return (
             f"In the breakdown of '{metric}' by '{cat_col}', '{top_cat}' leads with a total of "
             f"{top_sum:,.1f} ({top_pct:.1f}% of all observed volume). "

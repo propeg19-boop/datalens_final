@@ -191,23 +191,28 @@ def find_category_breakdowns(df: pd.DataFrame, column_types: Dict[str, str]) -> 
 
             try:
                 sub[num_col] = pd.to_numeric(sub[num_col], errors="coerce")
+                num_col_lower = num_col.lower()
+                is_mean_metric = any(k in num_col_lower for k in ["price", "rate", "pct", "ratio", "score", "avg", "percent", "margin", "discount", "temp", "age"])
+                agg_type = "mean" if is_mean_metric else "sum"
+
                 grouped = sub.groupby(cat_col)[num_col].agg(["sum", "mean", "count"]).dropna()
                 if len(grouped) < 2:
                     continue
 
-                grouped = grouped.sort_values(by="sum", ascending=False)
+                grouped = grouped.sort_values(by=agg_type, ascending=False)
                 total_sum = float(grouped["sum"].sum())
                 top_cat = str(grouped.index[0])
-                top_val = float(grouped["sum"].iloc[0])
-                top_pct = round((top_val / total_sum * 100.0), 1) if total_sum > 0 else 0.0
+                top_val = float(grouped[agg_type].iloc[0])
+                top_pct = round((float(grouped["sum"].iloc[0]) / total_sum * 100.0), 1) if total_sum > 0 else 0.0
 
                 bottom_cat = str(grouped.index[-1])
-                bottom_val = float(grouped["sum"].iloc[-1])
+                bottom_val = float(grouped[agg_type].iloc[-1])
 
                 findings.append({
                     "category_col": cat_col,
                     "metric_col": num_col,
                     "num_categories": n_unique,
+                    "agg_type": agg_type,
                     "total_sum": round(total_sum, 2),
                     "top_category": top_cat,
                     "top_category_sum": round(top_val, 2),
